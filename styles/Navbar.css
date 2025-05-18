@@ -1,0 +1,47 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid var(--color-gray200);
+}
+
+.tema-oscuro .navbar {
+  background-color: rgba(21, 32, 43, 0.8);
+  border-color: var(--color-gray800);
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+}
+
+.navbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.theme-button {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.theme-button:hover {
+  background-color: var(--color-gray100);
+}
+
+.tema-oscuro .theme-button:hover {
+  background-color: var(--color-gray800);
+}
+
+.sun-icon {
+  color: #facc15;
+}
+
+.moon-icon {
+  color: #4b5563;
+} 

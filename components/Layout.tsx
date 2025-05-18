@@ -1,32 +1,49 @@
 import React, { ReactNode } from "react";
-import Link from "next/link";
 import Head from "next/head";
+import { motion } from "framer-motion";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
+import BarraLateral from "./BarraLateral";
+import { useTema } from "../contexts/TemaContext";
 
 type Props = {
-  children?: ReactNode;
-  title?: string;
+  children: ReactNode;
+  titulo?: string;
+  descripcion?: string;
 };
 
-const Layout = ({ children, title = "This is the default title" }: Props) => (
-  <div>
-    <Head>
-      <title>{title}</title>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-    </Head>
-    <header>
-      <nav>
-        <Link href="/">Home</Link> | <Link href="/about">About</Link> |{" "}
-        <Link href="/users">Users List</Link> |{" "}
-        <a href="/api/users">Users API</a>
-      </nav>
-    </header>
-    {children}
-    <footer>
-      <hr />
-      <span>I'm here to stay (Footer)</span>
-    </footer>
-  </div>
-);
+const Layout = ({ children, titulo = "Bloop", descripcion = "Una red social moderna e intuitiva" }: Props) => {
+  const { tema } = useTema();
+
+  return (
+    <div className={`layout-container ${tema === 'oscuro' ? 'tema-oscuro' : ''}`}>
+      <Head>
+        <title>{titulo} | Bloop</title>
+        <meta name="description" content={descripcion} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      {/* Barra lateral izquierda (navegación principal) */}
+      <Sidebar />
+
+      {/* Contenido principal */}
+      <main className="main-content">
+        <Navbar titulo={titulo} />
+        <motion.div 
+          className="content-wrapper"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          {children}
+        </motion.div>
+      </main>
+
+      {/* Barra lateral derecha (tendencias, sugerencias, etc.) */}
+      <BarraLateral />
+    </div>
+  );
+};
 
 export default Layout;

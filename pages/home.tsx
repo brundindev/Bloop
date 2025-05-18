@@ -17,7 +17,7 @@ import Publicacion from '../components/Publicacion';
 import PublicacionForm from '../components/PublicacionForm';
 import { Publicacion as PublicacionType } from '../interfaces';
 
-const IndexPage = () => {
+const HomePage = () => {
   const { usuarioActual, cargando: cargandoAuth } = useAuth();
   const [publicaciones, setPublicaciones] = useState<PublicacionType[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -27,7 +27,7 @@ const IndexPage = () => {
     if (cargandoAuth) return;
     
     if (!usuarioActual) {
-      // Si no hay usuario, redirigir a welcome
+      // Si no hay usuario, redirigir a login
       router.push('/welcome');
       return;
     }
@@ -73,12 +73,38 @@ const IndexPage = () => {
     };
   }, [usuarioActual, cargandoAuth, router]);
 
-  // Redirigir a welcome
-  useEffect(() => {
-    router.replace('/welcome');
-  }, [router]);
-
-  return null;
+  return (
+    <Layout titulo="Inicio">
+      {/* Formulario para crear publicación */}
+      <PublicacionForm />
+      
+      {/* Lista de publicaciones */}
+      {cargando ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '10rem' }}>
+          <div style={{ 
+            width: '3rem', 
+            height: '3rem', 
+            borderRadius: '50%', 
+            border: '2px solid transparent',
+            borderTopColor: 'var(--color-primary)',
+            borderBottomColor: 'var(--color-primary)',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+        </div>
+      ) : publicaciones.length > 0 ? (
+        <div>
+          {publicaciones.map(publicacion => (
+            <Publicacion key={publicacion.id} publicacion={publicacion} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-gray700)' }}>
+          <p>No hay publicaciones para mostrar.</p>
+          <p>¡Sé el primero en publicar!</p>
+        </div>
+      )}
+    </Layout>
+  );
 };
 
-export default IndexPage;
+export default HomePage; 

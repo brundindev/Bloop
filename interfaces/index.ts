@@ -4,7 +4,69 @@
 //
 // import { User } from 'path/to/interfaces';
 
-export type User = {
-  id: number;
-  name: string;
-};
+// Interfaces para nuestra Red Social en Español
+
+// Tipo para roles de usuario
+export type RolUsuario = 'usuario' | 'moderador' | 'administrador';
+
+// Interfaz para Usuario
+export interface Usuario {
+  id: string;
+  nombre: string;
+  nombreUsuario: string;
+  email: string;
+  fotoURL: string;
+  biografia?: string;
+  fechaRegistro: Date | string | number;
+  ultimoAcceso?: Date | string | number;
+  rol: RolUsuario;
+  seguidores: string[];
+  siguiendo: string[];
+  favoritos: string[]; // IDs de publicaciones favoritas
+  publicacionesCount: number; // Contador de publicaciones
+  // La contraseña no se almacena en el documento del usuario
+  // Firebase Auth maneja la autenticación y el almacenamiento seguro de contraseñas
+}
+
+// Interfaz para Publicación (Tweet)
+export interface Publicacion {
+  id: string;
+  texto: string;
+  imagenURL?: string;
+  autorId: string;
+  autorNombre: string;
+  autorNombreUsuario: string;
+  autorFotoURL: string;
+  fechaCreacion: Date | string | number;
+  likes: string[]; // Array de IDs de usuarios
+  retweets: string[]; // Array de IDs de usuarios
+  comentarios: number; // Contador de comentarios
+  esRespuesta?: boolean;
+  publicacionOriginalId?: string; // Si es respuesta o retweet
+}
+
+// Interfaz para Comentario
+export interface Comentario {
+  id: string;
+  texto: string;
+  autorId: string;
+  autorNombre: string;
+  autorNombreUsuario: string;
+  autorFotoURL: string;
+  fechaCreacion: Date | string | number;
+  publicacionId: string;
+  likes: string[];
+}
+
+// Interfaz para Notificación
+export interface Notificacion {
+  id: string;
+  tipo: 'like' | 'retweet' | 'comentario' | 'seguidor';
+  emisorId: string;
+  emisorNombre: string;
+  emisorFotoURL: string;
+  receptorId: string;
+  publicacionId?: string;
+  fechaCreacion: Date | string | number;
+  leida: boolean;
+}

@@ -1,0 +1,15 @@
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  border-left: 1px solid var(--color-gray200);
+  border-right: 1px solid var(--color-gray200);
+}
+
+.content-wrapper {
+  padding-bottom: 5rem;
+} 
