@@ -3,8 +3,8 @@ import Link from "next/link";
 
 import { Usuario } from "../../interfaces";
 import { sampleUserData } from "../../utils/sample-data";
-import Layout from "../../components/Layout";
-import List from "../../components/List";
+import Layout from "../../../components/Layout";
+import List from "../../features/shared/components/List";
 
 type Props = {
   items: Partial<Usuario>[];
@@ -32,4 +32,4 @@ export const getStaticProps: GetStaticProps = async () => {
   return { props: { items } };
 };
 
-export default WithStaticProps;
+export default WithStaticProps; 

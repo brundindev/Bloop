@@ -26,4 +26,4 @@ export const sampleUserData: Partial<Usuario>[] = [
     favoritos: [],
     publicacionesCount: 0
   },
-];
+]; 

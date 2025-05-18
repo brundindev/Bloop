@@ -2,8 +2,8 @@ import { GetStaticProps, GetStaticPaths } from "next";
 
 import { Usuario } from "../../interfaces";
 import { sampleUserData } from "../../utils/sample-data";
-import Layout from "../../components/Layout";
-import ListDetail from "../../components/ListDetail";
+import Layout from "../../../components/Layout";
+import ListDetail from "../../features/shared/components/ListDetail";
 
 type Props = {
   item?: Partial<Usuario>;
@@ -13,7 +13,7 @@ type Props = {
 const StaticPropsDetail = ({ item, errors }: Props) => {
   if (errors) {
     return (
-      <Layout title="Error | Next.js + TypeScript Example">
+      <Layout title="Error | Bloop">
         <p>
           <span style={{ color: "red" }}>Error:</span> {errors}
         </p>
@@ -37,7 +37,7 @@ export default StaticPropsDetail;
 export const getStaticPaths: GetStaticPaths = async () => {
   // Get the paths we want to pre-render based on users
   const paths = sampleUserData.map((user) => ({
-    params: { id: user.id.toString() },
+    params: { id: user.id?.toString() || "" },
   }));
 
   // We'll pre-render only these paths at build time.
@@ -58,4 +58,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   } catch (err: any) {
     return { props: { errors: err.message } };
   }
-};
+}; 
