@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Usuario } from "../interfaces";
+import { Usuario } from "../../../interfaces";
 
 type ListDetailProps = {
   item: Usuario;

@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { auth, db, proveedorGoogle } from '../../../../utils/firebase';
-import { Usuario, RolUsuario } from '../../../../interfaces';
+import { Usuario, RolUsuario } from '../../../interfaces';
 import { obtenerUsuarioPorNombreUsuario } from '../../../../utils/services/usuarios';
 
 interface AuthContextProps {
