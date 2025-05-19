@@ -13,7 +13,7 @@ type Props = {
 const StaticPropsDetail = ({ item, errors }: Props) => {
   if (errors) {
     return (
-      <Layout title="Error | Next.js + TypeScript Example">
+      <Layout titulo="Error | Next.js + TypeScript Example">
         <p>
           <span style={{ color: "red" }}>Error:</span> {errors}
         </p>
@@ -23,7 +23,7 @@ const StaticPropsDetail = ({ item, errors }: Props) => {
 
   return (
     <Layout
-      title={`${
+      titulo={`${
         item ? item.nombre : "Detalle de Usuario"
       } | Bloop`}
     >
@@ -37,7 +37,7 @@ export default StaticPropsDetail;
 export const getStaticPaths: GetStaticPaths = async () => {
   // Get the paths we want to pre-render based on users
   const paths = sampleUserData.map((user) => ({
-    params: { id: user.id.toString() },
+    params: { id: user.id ? user.id.toString() : '' },
   }));
 
   // We'll pre-render only these paths at build time.

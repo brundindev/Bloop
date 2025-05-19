@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Usuario } from "../interfaces";
 
 type Props = {
-  data: Usuario;
+  data: Partial<Usuario>;
 };
 
 const ListItem = ({ data }: Props) => (

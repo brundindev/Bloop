@@ -16,6 +16,7 @@ export interface Usuario {
   id: string;
   nombre: string;
   nombreUsuario: string;
+  nombreNormalizado?: string; // Versión normalizada del nombre para búsquedas
   email: string;
   fotoURL: string;
   biografia?: string;

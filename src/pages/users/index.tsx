@@ -11,7 +11,7 @@ type Props = {
 };
 
 const WithStaticProps = ({ items }: Props) => (
-  <Layout title="Lista de Usuarios | Bloop">
+  <Layout titulo="Lista de Usuarios | Bloop">
     <h1>Lista de Usuarios</h1>
     <p>
       Ejemplo de obtención de datos desde <code>getStaticProps()</code>.

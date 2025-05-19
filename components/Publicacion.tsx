@@ -13,7 +13,8 @@ import {
   arrayUnion, 
   arrayRemove, 
   deleteDoc,
-  Timestamp
+  Timestamp,
+  FieldValue
 } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 
@@ -35,7 +36,7 @@ const Publicacion: React.FC<PublicacionProps> = ({ publicacion, esPerfil = false
   const hizoRetweet = usuarioActual ? publicacion.retweets.includes(usuarioActual.id) : false;
   
   // Formatear fecha
-  const formatearFecha = (fecha: Date | string | number | Timestamp) => {
+  const formatearFecha = (fecha: Date | string | number | Timestamp | FieldValue) => {
     let fechaObj: Date;
     
     if (fecha instanceof Timestamp) {
@@ -45,10 +46,16 @@ const Publicacion: React.FC<PublicacionProps> = ({ publicacion, esPerfil = false
     } else if (typeof fecha === 'number' || typeof fecha === 'string') {
       fechaObj = new Date(fecha);
     } else {
-      return 'Fecha desconocida';
+      // Si es FieldValue, devolver un texto genérico
+      return 'Hace un momento';
     }
     
-    return formatDistanceToNow(fechaObj, { addSuffix: true, locale: es });
+    try {
+      return formatDistanceToNow(fechaObj, { addSuffix: true, locale: es });
+    } catch (error) {
+      console.error('Error al formatear fecha:', error);
+      return 'Fecha desconocida';
+    }
   };
 
   // Manejar click en la publicación (ir a detalle)

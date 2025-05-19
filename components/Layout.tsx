@@ -6,20 +6,10 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import BarraLateral from "./BarraLateral";
 
-// Define nuestra interfaz de tema personalizada (igual que en _app.tsx)
-interface Theme {
-  background: string;
-  backgroundSecondary: string;
-  text: string;
-  textSecondary: string;
-  primary: string;
-  border: string;
-  hover: string;
-  shadow: string;
-}
+// Ya no necesitamos definir Theme aquí, usamos DefaultTheme de styled-components
 
 // Estilos para el layout
-const Container = styled.div<{ theme: Theme }>`
+const Container = styled.div`
   display: grid;
   grid-template-columns: auto 1fr auto;
   min-height: 100vh;
@@ -27,7 +17,7 @@ const Container = styled.div<{ theme: Theme }>`
   color: ${props => props.theme.text};
 `;
 
-const MainContent = styled.main<{ theme: Theme }>`
+const MainContent = styled.main`
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;

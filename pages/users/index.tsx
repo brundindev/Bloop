@@ -11,23 +11,21 @@ type Props = {
 };
 
 const WithStaticProps = ({ items }: Props) => (
-  <Layout title="Lista de Usuarios | Bloop">
+  <Layout titulo="Lista de Usuarios | Bloop">
     <h1>Lista de Usuarios</h1>
     <p>
       Ejemplo de obtención de datos desde <code>getStaticProps()</code>.
     </p>
     <p>Estás actualmente en: /users</p>
-    <List items={items as any} />
+    <List items={items} />
     <p>
-      <Link href="/">Ir al inicio</Link>
+      <Link href="/">Volver al inicio</Link>
     </p>
   </Layout>
 );
 
 export const getStaticProps: GetStaticProps = async () => {
-  // Example for including static props in a Next.js function component page.
-  // Don't forget to include the respective types for any props passed into
-  // the component.
+  // Ejemplo para datos SSG
   const items: Partial<Usuario>[] = sampleUserData;
   return { props: { items } };
 };

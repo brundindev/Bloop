@@ -8,7 +8,8 @@ import {
   limit, 
   onSnapshot,
   where,
-  getDocs
+  getDocs,
+  Unsubscribe
 } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,7 +34,7 @@ const IndexPage = () => {
     }
     
     // Obtener feed de publicaciones
-    const obtenerPublicaciones = async () => {
+    const obtenerPublicaciones = async (): Promise<Unsubscribe | (() => void)> => {
       try {
         setCargando(true);
         
@@ -65,11 +66,15 @@ const IndexPage = () => {
       }
     };
     
-    const unsubscribe = obtenerPublicaciones();
+    // Inicializamos unsubscribe con una función vacía por defecto
+    let unsubscribe: Unsubscribe | (() => void) = () => {};
+    
+    obtenerPublicaciones().then(unsub => {
+      unsubscribe = unsub;
+    });
+    
     return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
-      }
+      unsubscribe();
     };
   }, [usuarioActual, cargandoAuth, router]);
 

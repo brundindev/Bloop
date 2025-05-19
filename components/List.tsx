@@ -3,7 +3,7 @@ import ListItem from "./ListItem";
 import { Usuario } from "../interfaces";
 
 type Props = {
-  items: Usuario[];
+  items: Partial<Usuario>[];
 };
 
 const List = ({ items }: Props) => (

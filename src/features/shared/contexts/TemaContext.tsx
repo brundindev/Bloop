@@ -10,7 +10,23 @@ const temaClaro: DefaultTheme = {
   primary: "#2563eb",
   border: "#e5e7eb",
   hover: "#f0f2f5",
-  shadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
+  shadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+  
+  // Propiedades requeridas por styled-components
+  colors: {
+    primary: "#2563eb",
+    secondary: "#536471"
+  },
+  breakpoints: {
+    sm: "640px",
+    md: "768px",
+    lg: "1024px"
+  },
+  fontSizes: {
+    small: "14px",
+    medium: "16px",
+    large: "18px"
+  }
 };
 
 const temaOscuro: DefaultTheme = {
@@ -21,7 +37,23 @@ const temaOscuro: DefaultTheme = {
   primary: "#3b82f6",
   border: "#38444d",
   hover: "#202e3a",
-  shadow: "0 2px 8px rgba(0, 0, 0, 0.3)"
+  shadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+  
+  // Propiedades requeridas por styled-components
+  colors: {
+    primary: "#3b82f6",
+    secondary: "#8899a6"
+  },
+  breakpoints: {
+    sm: "640px",
+    md: "768px",
+    lg: "1024px"
+  },
+  fontSizes: {
+    small: "14px",
+    medium: "16px",
+    large: "18px"
+  }
 };
 
 interface TemaContextProps {

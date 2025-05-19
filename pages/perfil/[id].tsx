@@ -104,13 +104,24 @@ const PerfilPage = () => {
     if (!fecha) return 'Fecha desconocida';
     
     let fechaObj: Date;
-    if (fecha.toDate) {
-      fechaObj = fecha.toDate();
-    } else {
-      fechaObj = new Date(fecha);
-    }
     
-    return format(fechaObj, 'MMMM yyyy', { locale: es });
+    try {
+      if (fecha.toDate) {
+        fechaObj = fecha.toDate();
+      } else if (fecha instanceof Date) {
+        fechaObj = fecha;
+      } else if (typeof fecha === 'number' || typeof fecha === 'string') {
+        fechaObj = new Date(fecha);
+      } else {
+        // Si es FieldValue u otro tipo incompatible
+        return 'Fecha desconocida';
+      }
+      
+      return format(fechaObj, 'MMMM yyyy', { locale: es });
+    } catch (error) {
+      console.error('Error al formatear fecha de registro:', error);
+      return 'Fecha desconocida';
+    }
   };
 
   if (!perfilUsuario) {

@@ -13,7 +13,7 @@ type Props = {
 const StaticPropsDetail = ({ item, errors }: Props) => {
   if (errors) {
     return (
-      <Layout title="Error | Bloop">
+      <Layout titulo="Error | Bloop">
         <p>
           <span style={{ color: "red" }}>Error:</span> {errors}
         </p>
@@ -23,7 +23,7 @@ const StaticPropsDetail = ({ item, errors }: Props) => {
 
   return (
     <Layout
-      title={`${
+      titulo={`${
         item ? item.nombre : "Detalle de Usuario"
       } | Bloop`}
     >

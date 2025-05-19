@@ -16,8 +16,8 @@ const GlobalStyle = createGlobalStyle`
   html,
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: ${({ theme }) => theme.colors.background};
-    color: ${({ theme }) => theme.colors.text};
+    background-color: ${({ theme }) => theme.background};
+    color: ${({ theme }) => theme.text};
     line-height: 1.5;
     width: 100%;
     height: 100%;
@@ -26,18 +26,18 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body.dark-mode {
-    background-color: ${({ theme }) => theme.colors.backgroundDark};
-    color: ${({ theme }) => theme.colors.textDark};
+    background-color: ${({ theme }) => theme.backgroundSecondary};
+    color: ${({ theme }) => theme.textSecondary};
   }
 
   a {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.primary};
     text-decoration: none;
     transition: color 0.2s ease;
   }
 
   a:hover {
-    color: ${({ theme }) => theme.colors.primaryDark};
+    color: ${({ theme }) => theme.colors.primary};
   }
 
   button {
@@ -62,7 +62,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.colors.gray700};
+    background-color: ${({ theme }) => theme.border};
     border-radius: 20px;
   }
 
