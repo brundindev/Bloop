@@ -33,7 +33,11 @@ export default class MyDocument extends Document {
       <Html lang="es">
         <Head>
           <meta charSet="utf-8" />
-          {/* Aquí puedes agregar fuentes, metaetiquetas, etc. */}
+          {/* Favicon */}
+          <link rel="icon" href="/img/logo_bloop.png" />
+          <link rel="apple-touch-icon" href="/img/logo_bloop.png" />
+          
+          {/* Fuentes */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />

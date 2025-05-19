@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FaMoon, FaSun } from 'react-icons/fa';
 import styled, { useTheme } from 'styled-components';
 
@@ -15,6 +16,12 @@ const NavbarContent = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+`;
+
+const NavbarTitleSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
 `;
 
 const NavbarTitle = styled.h1`
@@ -69,7 +76,16 @@ const Navbar = ({ titulo }: NavbarProps) => {
   return (
     <NavbarContainer>
       <NavbarContent>
-        <NavbarTitle>{titulo}</NavbarTitle>
+        <NavbarTitleSection>
+          <Image 
+            src="/img/logo_bloop.png" 
+            alt="Bloop Logo" 
+            width={30} 
+            height={30} 
+            style={{ borderRadius: '50%' }} 
+          />
+          <NavbarTitle>{titulo}</NavbarTitle>
+        </NavbarTitleSection>
         
         <ThemeButton 
           onClick={cambiarTema}

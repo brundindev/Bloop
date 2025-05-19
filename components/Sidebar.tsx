@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { FaHome, FaBell, FaSearch, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
@@ -33,7 +34,13 @@ const Sidebar = () => {
         {/* Logo */}
         <Link href="/" legacyBehavior>
           <a className="logo-container">
-            <span className="logo-icon">B</span>
+            <Image 
+              src="/img/logo_bloop.png" 
+              alt="Bloop Logo" 
+              width={40} 
+              height={40} 
+              style={{ borderRadius: '50%' }} 
+            />
             <span className="logo-text">Bloop</span>
           </a>
         </Link>

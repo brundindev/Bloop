@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { FaGoogle, FaArrowLeft, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import React from 'react';
+import Image from 'next/image';
 
 // Componente que garantiza que todas las fuentes y estilos se carguen antes de mostrar el contenido
 const StylesLoaded = ({ children }: { children: React.ReactNode }) => {
@@ -76,7 +77,7 @@ const Header = styled.header`
 const Logo = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 `;
 
 const LogoIcon = styled.div`
@@ -92,9 +93,10 @@ const LogoIcon = styled.div`
 `;
 
 const LogoText = styled.span`
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: white;
+  letter-spacing: -0.5px;
 `;
 
 const Card = styled(motion.div)`
@@ -377,7 +379,13 @@ const WelcomePage = () => {
         
         <Header>
           <Logo>
-            <LogoIcon>B</LogoIcon>
+            <Image 
+              src="/img/logo_bloop.png" 
+              alt="Bloop Logo" 
+              width={50} 
+              height={50} 
+              style={{ borderRadius: '50%' }} 
+            />
             <LogoText>bloop</LogoText>
           </Logo>
         </Header>

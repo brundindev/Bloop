@@ -5,16 +5,16 @@ import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
 import { getDatabase } from 'firebase/database';
 
-// Configuración de Firebase proporcionada
+// Configuración de Firebase con variables de entorno para compatibilidad con Vercel
 const firebaseConfig = {
-  apiKey: "AIzaSyBDB_k4f4_Wi7IPBjth_C1XnBDtfIOThWc",
-  authDomain: "bloop-socialnetwork.firebaseapp.com",
-  databaseURL: "https://bloop-socialnetwork-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "bloop-socialnetwork",
-  storageBucket: "bloop-socialnetwork.firebasestorage.app",
-  messagingSenderId: "81347795005",
-  appId: "1:81347795005:web:237d472644716cbf31f254",
-  measurementId: "G-HMDHTPX4M9"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBDB_k4f4_Wi7IPBjth_C1XnBDtfIOThWc",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "bloop-socialnetwork.firebaseapp.com",
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://bloop-socialnetwork-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "bloop-socialnetwork",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "bloop-socialnetwork.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "81347795005",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:81347795005:web:237d472644716cbf31f254",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-HMDHTPX4M9"
 };
 
 // Inicializar Firebase
