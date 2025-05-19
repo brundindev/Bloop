@@ -22,13 +22,30 @@ interface CookiesContextProps {
   eliminarCookies: () => Promise<void>;
 }
 
-const CookiesContext = createContext<CookiesContextProps | undefined>(undefined);
+// Valores por defecto para el contexto de cookies
+const valoresPorDefecto: CookiesContextProps = {
+  cookies: null,
+  cargandoCookies: false,
+  cookiesAceptadas: false,
+  aceptarCookiesUsuario: async () => {},
+  rechazarCookies: async () => {},
+  actualizarPreferenciasUsuario: async () => {},
+  eliminarCookies: async () => {}
+};
+
+const CookiesContext = createContext<CookiesContextProps>(valoresPorDefecto);
+
+// Detectar si estamos en el servidor
+const isServer = () => typeof window === 'undefined';
 
 export function useCookies() {
   const context = useContext(CookiesContext);
-  if (context === undefined) {
+  
+  // Verificar si estamos en un entorno de navegador
+  if (typeof window !== 'undefined' && context === valoresPorDefecto) {
     throw new Error('useCookies debe ser usado dentro de un CookiesProvider');
   }
+  
   return context;
 }
 
@@ -41,14 +58,26 @@ export function CookiesProvider({ children }: CookiesProviderProps) {
   const router = useRouter();
   
   const [cookies, setCookies] = useState<UserCookies | null>(null);
-  const [cargandoCookies, setCargandoCookies] = useState(true);
+  const [cargandoCookies, setCargandoCookies] = useState(!isServer());
   const [cookiesAceptadas, setCookiesAceptadas] = useState(false);
   const [ultimaRutaVisitada, setUltimaRutaVisitada] = useState('');
   const [tiempoSesion, setTiempoSesion] = useState(0);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
+  // Si estamos en el servidor durante SSR, devolver valores por defecto
+  if (isServer()) {
+    return (
+      <CookiesContext.Provider value={valoresPorDefecto}>
+        {children}
+      </CookiesContext.Provider>
+    );
+  }
+
   // Cargar cookies cuando cambia el usuario
   useEffect(() => {
+    // No ejecutar en el servidor
+    if (isServer()) return;
+    
     async function cargarCookies() {
       if (!usuarioActual) {
         setCookies(null);
@@ -81,6 +110,9 @@ export function CookiesProvider({ children }: CookiesProviderProps) {
   
   // Iniciar contador de tiempo de sesión
   useEffect(() => {
+    // No ejecutar en el servidor
+    if (isServer()) return;
+    
     if (usuarioActual && cookiesAceptadas) {
       // Limpiar intervalo existente si hay
       if (intervalId) {
@@ -103,6 +135,9 @@ export function CookiesProvider({ children }: CookiesProviderProps) {
   
   // Sincronizar tiempo de sesión con Firebase
   useEffect(() => {
+    // No ejecutar en el servidor
+    if (isServer()) return;
+    
     if (usuarioActual && cookiesAceptadas && tiempoSesion > 0) {
       // Actualizar en Firebase cada 2 minutos (120 segundos)
       if (tiempoSesion % 120 === 0) {
@@ -113,6 +148,9 @@ export function CookiesProvider({ children }: CookiesProviderProps) {
   
   // Registrar cambios de ruta para analíticas
   useEffect(() => {
+    // No ejecutar en el servidor
+    if (isServer()) return;
+    
     if (!usuarioActual || !cookiesAceptadas) return;
     
     const ruta = router.asPath;

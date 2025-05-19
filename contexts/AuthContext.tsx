@@ -22,15 +22,32 @@ interface AuthContextProps {
   cerrarSesion: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+// Valores por defecto para contexto de autenticación
+const valoresPorDefecto: AuthContextProps = {
+  usuarioActual: null,
+  cargando: false,
+  iniciarSesionConGoogle: async () => {},
+  iniciarSesionConEmail: async () => {},
+  iniciarSesionConNombreUsuario: async () => {},
+  registrarConEmail: async () => {},
+  cerrarSesion: async () => {}
+};
+
+const AuthContext = createContext<AuthContextProps>(valoresPorDefecto);
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  
+  // Verificar si estamos en un entorno de navegador
+  if (typeof window !== 'undefined' && context === valoresPorDefecto) {
     throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
+  
   return context;
 }
+
+// Detectar si estamos en el servidor
+const isServer = () => typeof window === 'undefined';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -38,9 +55,12 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [usuarioActual, setUsuarioActual] = useState<Usuario | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!isServer());
 
   useEffect(() => {
+    // No ejecutar el efecto en el servidor
+    if (isServer()) return;
+    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCargando(true);
       if (user) {
@@ -86,6 +106,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => unsubscribe();
   }, []);
+
+  // Si estamos en el servidor durante SSR, devolver valores por defecto
+  if (isServer()) {
+    return (
+      <AuthContext.Provider value={valoresPorDefecto}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 
   async function iniciarSesionConGoogle() {
     setCargando(true);

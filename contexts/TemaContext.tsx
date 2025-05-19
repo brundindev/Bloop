@@ -115,13 +115,26 @@ interface TemaContextProps {
   styledTheme: DefaultTheme;
 }
 
-const TemaContext = createContext<TemaContextProps | undefined>(undefined);
+// Valores por defecto para el contexto
+const valoresPorDefecto: TemaContextProps = {
+  tema: 'claro',
+  cambiarTema: () => {},
+  styledTheme: temaClaro
+};
+
+const TemaContext = createContext<TemaContextProps>(valoresPorDefecto);
+
+// Detectar si estamos en el servidor
+const isServer = () => typeof window === 'undefined';
 
 export function useTema() {
   const context = useContext(TemaContext);
-  if (context === undefined) {
+  
+  // Verificar si estamos en un entorno de navegador
+  if (typeof window !== 'undefined' && context === valoresPorDefecto) {
     throw new Error('useTema debe ser usado dentro de un TemaProvider');
   }
+  
   return context;
 }
 
@@ -134,28 +147,40 @@ export function TemaProvider({ children }: TemaProviderProps) {
   const [styledTheme, setStyledTheme] = useState<DefaultTheme>(temaClaro);
   const { usuarioActual } = useAuth();
 
+  // Si estamos en el servidor durante SSR, devolver valores por defecto
+  if (isServer()) {
+    return (
+      <TemaContext.Provider value={valoresPorDefecto}>
+        <ThemeProvider theme={temaClaro}>
+          <GlobalStyle />
+          {children}
+        </ThemeProvider>
+      </TemaContext.Provider>
+    );
+  }
+
   // Al iniciar, verificamos si hay una preferencia guardada
   useEffect(() => {
     // Solo ejecutar en el cliente
-    if (typeof window !== 'undefined') {
-      const temaGuardado = localStorage.getItem('tema');
-      
-      if (temaGuardado === 'oscuro') {
-        setTema('oscuro');
-        setStyledTheme(temaOscuro);
-        document.documentElement.classList.add('dark');
-      } else if (temaGuardado === 'claro') {
-        setTema('claro');
-        setStyledTheme(temaClaro);
-        document.documentElement.classList.remove('dark');
-      } else {
-        // Si no hay preferencia guardada, detectamos la del sistema
-        const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTema(prefiereOscuro ? 'oscuro' : 'claro');
-        setStyledTheme(prefiereOscuro ? temaOscuro : temaClaro);
-        document.documentElement.classList.toggle('dark', prefiereOscuro);
-        localStorage.setItem('tema', prefiereOscuro ? 'oscuro' : 'claro');
-      }
+    if (isServer()) return;
+    
+    const temaGuardado = localStorage.getItem('tema');
+    
+    if (temaGuardado === 'oscuro') {
+      setTema('oscuro');
+      setStyledTheme(temaOscuro);
+      document.documentElement.classList.add('dark');
+    } else if (temaGuardado === 'claro') {
+      setTema('claro');
+      setStyledTheme(temaClaro);
+      document.documentElement.classList.remove('dark');
+    } else {
+      // Si no hay preferencia guardada, detectamos la del sistema
+      const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTema(prefiereOscuro ? 'oscuro' : 'claro');
+      setStyledTheme(prefiereOscuro ? temaOscuro : temaClaro);
+      document.documentElement.classList.toggle('dark', prefiereOscuro);
+      localStorage.setItem('tema', prefiereOscuro ? 'oscuro' : 'claro');
     }
   }, []);
 

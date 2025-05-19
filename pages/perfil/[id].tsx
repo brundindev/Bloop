@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { doc, getDoc, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCookies } from '../../contexts/CookiesContext';
@@ -13,6 +13,13 @@ import { FaCalendarAlt, FaUserPlus, FaUserCheck, FaArrowLeft, FaHeart, FaHistory
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { seguirUsuario, dejarDeSeguirUsuario, obtenerUsuarioPorId } from '../../utils/services/usuarios';
+import { GetServerSideProps } from 'next';
+
+// Tipo para props de la página
+interface PerfilPageProps {
+  perfilUsuarioSSR: Usuario | null;
+  publicacionesSSR: PublicacionType[];
+}
 
 // Variantes para animaciones
 const containerVariants = {
@@ -35,16 +42,16 @@ const itemVariants = {
   }
 };
 
-const PerfilPage = () => {
+const PerfilPage = ({ perfilUsuarioSSR, publicacionesSSR }: PerfilPageProps) => {
   const router = useRouter();
   const { id } = router.query;
   const { usuarioActual } = useAuth();
   const { cookies, cookiesAceptadas } = useCookies();
   
-  const [perfilUsuario, setPerfilUsuario] = useState<Usuario | null>(null);
-  const [publicaciones, setPublicaciones] = useState<PublicacionType[]>([]);
+  const [perfilUsuario, setPerfilUsuario] = useState<Usuario | null>(perfilUsuarioSSR);
+  const [publicaciones, setPublicaciones] = useState<PublicacionType[]>(publicacionesSSR);
   const [publicacionesFavoritas, setPublicacionesFavoritas] = useState<PublicacionType[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(!perfilUsuarioSSR);
   const [cargandoFavoritos, setCargandoFavoritos] = useState(true);
   const [siguiendo, setSiguiendo] = useState(false);
   const [activeTab, setActiveTab] = useState<'publicaciones' | 'megusta'>('publicaciones');
@@ -54,6 +61,9 @@ const PerfilPage = () => {
 
   useEffect(() => {
     if (!id) return;
+    
+    // Si ya tenemos datos del SSR y no hay usuario actual, no necesitamos hacer nada más
+    if (perfilUsuarioSSR && !usuarioActual) return;
     
     // Obtener datos del usuario
     const obtenerDatosUsuario = async () => {
@@ -80,12 +90,20 @@ const PerfilPage = () => {
         }
       } catch (error) {
         console.error('Error al obtener datos del usuario:', error);
+      } finally {
+        setCargando(false);
       }
     };
     
-    // Obtener publicaciones del usuario
+    // Obtener publicaciones del usuario si no las tenemos del SSR
     const obtenerPublicacionesUsuario = () => {
       try {
+        // Si ya tenemos publicaciones del SSR y no hay usuario actual, no cargar de nuevo
+        if (publicacionesSSR.length > 0 && !usuarioActual) {
+          setCargando(false);
+          return () => {};
+        }
+        
         const publicacionesQuery = query(
           collection(db, 'publicaciones'),
           where('autorId', '==', id),
@@ -110,7 +128,11 @@ const PerfilPage = () => {
       }
     };
     
-    obtenerDatosUsuario();
+    // Solo obtenemos datos nuevos si hay usuario actual o no tenemos datos del SSR
+    if (usuarioActual || !perfilUsuarioSSR) {
+      obtenerDatosUsuario();
+    }
+    
     const unsubscribe = obtenerPublicacionesUsuario();
     
     return () => {
@@ -118,7 +140,7 @@ const PerfilPage = () => {
         unsubscribe();
       }
     };
-  }, [id, usuarioActual, router, cookiesAceptadas]);
+  }, [id, usuarioActual, router, cookiesAceptadas, perfilUsuarioSSR, publicacionesSSR]);
 
   // Cargar publicaciones favoritas cuando se selecciona esa pestaña
   useEffect(() => {
@@ -488,6 +510,81 @@ const PerfilPage = () => {
       </motion.div>
     </Layout>
   );
+};
+
+// Implementación de getServerSideProps para cargar datos en el servidor
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params || {};
+  
+  if (!id) {
+    return {
+      redirect: {
+        destination: '/404',
+        permanent: false,
+      },
+    };
+  }
+  
+  try {
+    // Obtener datos del usuario
+    const docRef = doc(db, 'usuarios', id as string);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return {
+        redirect: {
+          destination: '/404',
+          permanent: false,
+        },
+      };
+    }
+    
+    // Convertir los datos del usuario
+    const perfilUsuario = {
+      ...docSnap.data(),
+      id: docSnap.id,
+      // Convertir objetos de fecha de Firestore a timestamps para que sean serializables
+      fechaRegistro: docSnap.data().fechaRegistro ? docSnap.data().fechaRegistro.toMillis() : null,
+      ultimoAcceso: docSnap.data().ultimoAcceso ? docSnap.data().ultimoAcceso.toMillis() : null,
+    } as Usuario;
+    
+    // Obtener publicaciones iniciales
+    const publicacionesQuery = query(
+      collection(db, 'publicaciones'),
+      where('autorId', '==', id),
+      orderBy('fechaCreacion', 'desc'),
+      // Limitar a un número razonable para la carga inicial
+      // En el cliente se pueden cargar más con pagination si es necesario
+    );
+    
+    const publicacionesSnap = await getDocs(publicacionesQuery);
+    const publicaciones = publicacionesSnap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        // Convertir fechas para que sean serializables
+        fechaCreacion: data.fechaCreacion ? data.fechaCreacion.toMillis() : null,
+      };
+    }) as PublicacionType[];
+    
+    return {
+      props: {
+        perfilUsuarioSSR: perfilUsuario,
+        publicacionesSSR: publicaciones,
+      },
+    };
+  } catch (error) {
+    console.error('Error en getServerSideProps:', error);
+    
+    // En caso de error, devolvemos datos vacíos y dejamos que la lógica del cliente maneje la carga
+    return {
+      props: {
+        perfilUsuarioSSR: null,
+        publicacionesSSR: [],
+      },
+    };
+  }
 };
 
 export default PerfilPage; 
