@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaCookieBite, FaShieldAlt, FaTimes, FaCog } from 'react-icons/fa';
 import { useCookies } from '../../contexts/CookiesContext';
 import { useAuth } from '../../contexts/AuthContext';
+import useHasMounted from '../../utils/useHasMounted';
 
 const BannerContainer = styled(motion.div)`
   position: fixed;
@@ -219,6 +220,15 @@ const buttonVariants = {
 type TipoPreferenciaCookie = 'necesarias' | 'preferencias' | 'analiticas';
 
 const CookieBanner: React.FC = () => {
+  // Usar el hook para detectar si estamos en el cliente
+  const hasMounted = useHasMounted();
+  
+  // Si no ha montado (estamos en el servidor o durante hidratación), no renderizar nada
+  if (!hasMounted) {
+    return null;
+  }
+  
+  // El resto del componente sigue igual, pero ahora solo se ejecuta en el cliente
   const { usuarioActual } = useAuth();
   const { 
     cookiesAceptadas, 

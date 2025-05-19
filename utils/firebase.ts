@@ -1,9 +1,9 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
-import { getDatabase } from 'firebase/database';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED, Firestore } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getAnalytics, Analytics } from 'firebase/analytics';
+import { getDatabase, Database } from 'firebase/database';
 
 // Configuración de Firebase con variables de entorno para compatibilidad con Vercel
 const firebaseConfig = {
@@ -17,36 +17,59 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-HMDHTPX4M9"
 };
 
-// Inicializar Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Detectar si estamos en el servidor
+const isServer = typeof window === 'undefined';
 
-// Inicializar servicios con opciones para mejor rendimiento
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-const proveedorGoogle = new GoogleAuthProvider();
-const database = getDatabase(app);
+// Variables para almacenar las instancias
+let app: FirebaseApp;
+let db: Firestore;
+let auth: Auth;
+let storage: FirebaseStorage;
+let database: Database;
+let analytics: Analytics | null = null;
+let proveedorGoogle: GoogleAuthProvider;
 
-// Habilitar persistencia offline para Firestore (solo en cliente)
-// Configurada para funcionar con múltiples pestañas y manejar errores específicos
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      // Múltiples pestañas abiertas, se usará la persistencia de la primera
-      console.warn('La persistencia de Firestore solo puede habilitarse en una pestaña a la vez.');
-    } else if (err.code === 'unimplemented') {
-      // El navegador actual no soporta persistencia
-      console.warn('Este navegador no soporta la persistencia offline de Firestore.');
-    } else {
-      console.error('Error al habilitar persistencia offline:', err);
-    }
-  });
-}
-
-// Inicializar Analytics solo en el cliente (no en el servidor)
-let analytics = null;
-if (typeof window !== 'undefined') {
-  analytics = getAnalytics(app);
+// Inicializar Firebase de manera segura solo en el cliente o con condiciones específicas en SSR
+if (!isServer) {
+  // Inicializar en el cliente
+  try {
+    // Solo inicializar una vez
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    
+    // Inicializar servicios
+    db = getFirestore(app);
+    auth = getAuth(app);
+    storage = getStorage(app);
+    database = getDatabase(app);
+    proveedorGoogle = new GoogleAuthProvider();
+    
+    // Analytics solo en el cliente
+    analytics = getAnalytics(app);
+    
+    // Habilitar persistencia offline para Firestore (solo en cliente)
+    enableIndexedDbPersistence(db).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        // Múltiples pestañas abiertas, se usará la persistencia de la primera
+        console.warn('La persistencia de Firestore solo puede habilitarse en una pestaña a la vez.');
+      } else if (err.code === 'unimplemented') {
+        // El navegador actual no soporta persistencia
+        console.warn('Este navegador no soporta la persistencia offline de Firestore.');
+      } else {
+        console.error('Error al habilitar persistencia offline:', err);
+      }
+    });
+  } catch (error) {
+    console.error('Error al inicializar Firebase:', error);
+  }
+} else {
+  // En el servidor, inicializar lo mínimo necesario para SSR
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  db = getFirestore(app);
+  auth = getAuth(app);
+  storage = getStorage(app);
+  database = getDatabase(app);
+  proveedorGoogle = new GoogleAuthProvider();
+  // No inicializar analytics en el servidor
 }
 
 export { db, auth, storage, proveedorGoogle, analytics, database }; 
