@@ -215,6 +215,9 @@ const buttonVariants = {
   tap: { scale: 0.95 }
 };
 
+// Tipo para las preferencias de cookies
+type TipoPreferenciaCookie = 'necesarias' | 'preferencias' | 'analiticas';
+
 const CookieBanner: React.FC = () => {
   const { usuarioActual } = useAuth();
   const { 
@@ -251,7 +254,7 @@ const CookieBanner: React.FC = () => {
   };
   
   // Manejar cambios en las preferencias de cookies
-  const handleTogglePreferencia = (tipo: string) => {
+  const handleTogglePreferencia = (tipo: TipoPreferenciaCookie) => {
     setPreferencias(prev => ({
       ...prev,
       [tipo]: !prev[tipo]

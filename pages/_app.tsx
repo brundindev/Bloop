@@ -5,6 +5,7 @@ import { CookiesProvider } from '../contexts/CookiesContext';
 import CookieBanner from '../components/ui/CookieBanner';
 import Head from 'next/head';
 import '../styles/globals.css';
+import '../styles/PerfilPage.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

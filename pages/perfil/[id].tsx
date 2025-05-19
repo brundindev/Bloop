@@ -13,7 +13,6 @@ import { FaCalendarAlt, FaUserPlus, FaUserCheck, FaArrowLeft, FaHeart, FaHistory
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { seguirUsuario, dejarDeSeguirUsuario, obtenerUsuarioPorId } from '../../utils/services/usuarios';
-import '../../styles/PerfilPage.css';
 
 // Variantes para animaciones
 const containerVariants = {
