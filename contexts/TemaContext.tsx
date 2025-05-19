@@ -127,11 +127,26 @@ const TemaContext = createContext<TemaContextProps>(valoresPorDefecto);
 // Detectar si estamos en el servidor
 const isServer = () => typeof window === 'undefined';
 
+// Flag para controlar si estamos en hidratación inicial
+let isHydrating = true;
+if (!isServer()) {
+  // Ejecutar después del montaje inicial
+  setTimeout(() => {
+    isHydrating = false;
+  }, 0);
+}
+
 export function useTema() {
   const context = useContext(TemaContext);
   
-  // Verificar si estamos en un entorno de navegador
-  if (typeof window !== 'undefined' && context === valoresPorDefecto) {
+  // En el servidor o durante hidratación, siempre devolver el contexto
+  // sin lanzar error, incluso si es el valor por defecto
+  if (isServer() || isHydrating) {
+    return context;
+  }
+  
+  // En el cliente después de la hidratación, lanzar error si se usa fuera del Provider
+  if (context === valoresPorDefecto) {
     throw new Error('useTema debe ser usado dentro de un TemaProvider');
   }
   
@@ -146,9 +161,16 @@ export function TemaProvider({ children }: TemaProviderProps) {
   const [tema, setTema] = useState<'claro' | 'oscuro'>('claro');
   const [styledTheme, setStyledTheme] = useState<DefaultTheme>(temaClaro);
   const { usuarioActual } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
-  // Si estamos en el servidor durante SSR, devolver valores por defecto
-  if (isServer()) {
+  // Marcar componente como montado
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Si estamos en el servidor durante SSR o aún no está montado, devolver valores por defecto
+  if (isServer() || !mounted) {
     return (
       <TemaContext.Provider value={valoresPorDefecto}>
         <ThemeProvider theme={temaClaro}>

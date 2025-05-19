@@ -33,21 +33,37 @@ const valoresPorDefecto: AuthContextProps = {
   cerrarSesion: async () => {}
 };
 
+// Crear el contexto pero permitir valores por defecto
 const AuthContext = createContext<AuthContextProps>(valoresPorDefecto);
+
+// Detectar si estamos en el servidor
+const isServer = () => typeof window === 'undefined';
+
+// Flag para controlar si estamos en hidratación inicial
+let isHydrating = true;
+if (!isServer()) {
+  // Ejecutar después del montaje inicial
+  setTimeout(() => {
+    isHydrating = false;
+  }, 0);
+}
 
 export function useAuth() {
   const context = useContext(AuthContext);
   
-  // Verificar si estamos en un entorno de navegador
-  if (typeof window !== 'undefined' && context === valoresPorDefecto) {
+  // En el servidor o durante hidratación, siempre devolver el contexto
+  // sin lanzar error, incluso si es el valor por defecto
+  if (isServer() || isHydrating) {
+    return context;
+  }
+  
+  // En el cliente después de la hidratación, lanzar error si se usa fuera del Provider
+  if (context === valoresPorDefecto) {
     throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
   
   return context;
 }
-
-// Detectar si estamos en el servidor
-const isServer = () => typeof window === 'undefined';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -56,6 +72,13 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [usuarioActual, setUsuarioActual] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(!isServer());
+  const [mounted, setMounted] = useState(false);
+  
+  // Marcar componente como montado
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     // No ejecutar el efecto en el servidor
@@ -107,8 +130,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => unsubscribe();
   }, []);
 
-  // Si estamos en el servidor durante SSR, devolver valores por defecto
-  if (isServer()) {
+  // Si estamos en el servidor durante SSR o aún no está montado, devolver valores por defecto
+  if (isServer() || !mounted) {
     return (
       <AuthContext.Provider value={valoresPorDefecto}>
         {children}
