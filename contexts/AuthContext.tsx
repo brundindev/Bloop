@@ -39,21 +39,27 @@ const AuthContext = createContext<AuthContextProps>(valoresPorDefecto);
 // Detectar si estamos en el servidor
 const isServer = () => typeof window === 'undefined';
 
-// Flag para controlar si estamos en hidratación inicial
+// Datos para la gestión de hidratación
 let isHydrating = true;
+let isInitialRender = true;
+
 if (!isServer()) {
-  // Ejecutar después del montaje inicial
+  // Establecer isHydrating a false después de un período de tiempo
   setTimeout(() => {
     isHydrating = false;
-  }, 0);
+  }, 100);
+  
+  // Marcar cuando completa el renderizado inicial
+  setTimeout(() => {
+    isInitialRender = false;
+  }, 150);
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
   
-  // En el servidor o durante hidratación, siempre devolver el contexto
-  // sin lanzar error, incluso si es el valor por defecto
-  if (isServer() || isHydrating) {
+  // En el servidor, durante hidratación o primer renderizado, devolver el contexto sin errores
+  if (isServer() || isHydrating || isInitialRender) {
     return context;
   }
   
@@ -74,15 +80,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [cargando, setCargando] = useState(!isServer());
   const [mounted, setMounted] = useState(false);
   
-  // Marcar componente como montado
+  // Marcar componente como montado con un pequeño retraso para asegurar hidratación completa
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 50);
+    
+    return () => {
+      clearTimeout(timer);
+      setMounted(false);
+    };
   }, []);
 
   useEffect(() => {
     // No ejecutar el efecto en el servidor
     if (isServer()) return;
+    
+    // Iniciar listener de autenticación solo cuando el componente está montado
+    if (!mounted) return;
     
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCargando(true);
@@ -128,7 +143,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [mounted]); // Agregamos mounted como dependencia
 
   // Si estamos en el servidor durante SSR o aún no está montado, devolver valores por defecto
   if (isServer() || !mounted) {

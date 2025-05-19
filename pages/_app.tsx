@@ -16,29 +16,34 @@ function MyApp({ Component, pageProps }: AppProps) {
   
   // Después del primer renderizado, marcamos que el componente está montado
   useEffect(() => {
-    setMounted(true);
+    // Usar un pequeño retraso para asegurar que todos los providers estén listos
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Renderizado universal seguro (funciona en servidor y cliente)
   return (
     <>
+      <Head>
+        <title>Bloop - Red Social</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      
       <TemaProvider>
         <AuthProvider>
           <CookiesProvider>
-            <Head>
-              <title>Bloop - Red Social</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1" />
-              <link rel="icon" href="/favicon.ico" />
-            </Head>
-            
             {/* 
-              Durante la hidratación, en el primer renderizado del cliente,
-              mostramos un contenido básico para evitar errores de hidratación 
+              Solo renderizar el contenido cuando no estamos en el servidor
+              o cuando ya está montado en el cliente
             */}
-            {!mounted && isServer ? null : <Component {...pageProps} />}
+            {(!isServer || mounted) && <Component {...pageProps} />}
             
             {/* El banner de cookies solo se muestra una vez montado el componente */}
-            {mounted ? <CookieBanner /> : null}
+            {mounted && <CookieBanner />}
           </CookiesProvider>
         </AuthProvider>
       </TemaProvider>
