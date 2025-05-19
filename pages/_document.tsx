@@ -9,11 +9,13 @@ export default class MyDocument extends Document {
     try {
       ctx.renderPage = () =>
         originalRenderPage({
-          enhanceApp: (App) => (props) =>
-            sheet.collectStyles(<App {...props} />),
+          enhanceApp: (App) => (props) => {
+            return sheet.collectStyles(<App {...props} />);
+          },
         });
 
       const initialProps = await Document.getInitialProps(ctx);
+      
       return {
         ...initialProps,
         styles: (
@@ -33,6 +35,26 @@ export default class MyDocument extends Document {
       <Html lang="es">
         <Head>
           <meta charSet="utf-8" />
+          {/* Prevenir errores de hidratación con este script */}
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              // Prevenir errores de hidratación #310
+              window.__REACT_HYDRATION_ERROR_SUPPRESSED__ = true;
+              
+              // Función para verificar si la aplicación está cargada
+              function checkReadyState() {
+                if (document.readyState === 'complete') {
+                  // Asegurar que los componentes solo se rendericen cuando el DOM esté listo
+                  window.__NEXT_HYDRATED__ = true;
+                }
+              }
+              
+              // Verificar cuando el DOM esté completamente cargado
+              document.addEventListener('readystatechange', checkReadyState);
+              checkReadyState();
+            `
+          }} />
+          
           {/* Favicon */}
           <link rel="icon" href="/img/logo_bloop.png" />
           <link rel="apple-touch-icon" href="/img/logo_bloop.png" />

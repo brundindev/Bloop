@@ -6,6 +6,7 @@ import { CookiesProvider } from '../contexts/CookiesContext';
 import CookieBanner from '../components/ui/CookieBanner';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import NoSSR from '../utils/NoSSR';
 import '../styles/globals.css';
 import '../styles/PerfilPage.css';
 
@@ -27,46 +28,7 @@ const Loading = () => (
   </div>
 );
 
-// Envolver nuestra aplicación en un componente que no se renderiza en el servidor
-const NoSSRApp = ({ Component, pageProps }: AppProps) => {
-  // Estado para rastrear si el componente está completamente montado
-  const [fullMounted, setFullMounted] = useState(false);
-  
-  useEffect(() => {
-    // Usar un retraso mayor para asegurar que todos los providers estén inicializados
-    const timer = setTimeout(() => {
-      setFullMounted(true);
-    }, 200);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
-  // Renderizado controlado
-  return (
-    <TemaProvider>
-      <AuthProvider>
-        <CookiesProvider>
-          {fullMounted ? (
-            <>
-              <Component {...pageProps} />
-              <CookieBanner />
-            </>
-          ) : (
-            <Loading />
-          )}
-        </CookiesProvider>
-      </AuthProvider>
-    </TemaProvider>
-  );
-};
-
-// Deshabilitar completamente SSR para la aplicación
-const NoSSRWrapper = dynamic(() => Promise.resolve(NoSSRApp), {
-  ssr: false,
-  loading: () => <Loading />
-});
-
-function MyApp(props: AppProps) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
@@ -74,7 +36,18 @@ function MyApp(props: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <NoSSRWrapper {...props} />
+      
+      {/* Usar NoSSR para todo el contenido con providers */}
+      <NoSSR fallback={<Loading />}>
+        <TemaProvider>
+          <AuthProvider>
+            <CookiesProvider>
+              <Component {...pageProps} />
+              <CookieBanner />
+            </CookiesProvider>
+          </AuthProvider>
+        </TemaProvider>
+      </NoSSR>
     </>
   );
 }

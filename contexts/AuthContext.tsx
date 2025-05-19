@@ -39,33 +39,12 @@ const AuthContext = createContext<AuthContextProps>(valoresPorDefecto);
 // Detectar si estamos en el servidor
 const isServer = () => typeof window === 'undefined';
 
-// Datos para la gestión de hidratación
-let isHydrating = true;
-let isInitialRender = true;
-
-if (!isServer()) {
-  // Establecer isHydrating a false después de un período de tiempo
-  setTimeout(() => {
-    isHydrating = false;
-  }, 100);
-  
-  // Marcar cuando completa el renderizado inicial
-  setTimeout(() => {
-    isInitialRender = false;
-  }, 150);
-}
-
 export function useAuth() {
   const context = useContext(AuthContext);
   
-  // En el servidor, durante hidratación o primer renderizado, devolver el contexto sin errores
-  if (isServer() || isHydrating || isInitialRender) {
-    return context;
-  }
-  
-  // En el cliente después de la hidratación, lanzar error si se usa fuera del Provider
-  if (context === valoresPorDefecto) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  // En el servidor, siempre devolver el valor por defecto
+  if (isServer()) {
+    return valoresPorDefecto;
   }
   
   return context;
@@ -77,21 +56,16 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [usuarioActual, setUsuarioActual] = useState<Usuario | null>(null);
-  const [cargando, setCargando] = useState(!isServer());
+  const [cargando, setCargando] = useState(true);
   const [mounted, setMounted] = useState(false);
   
-  // Marcar componente como montado con un pequeño retraso para asegurar hidratación completa
+  // Marcar componente como montado
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true);
-    }, 50);
-    
-    return () => {
-      clearTimeout(timer);
-      setMounted(false);
-    };
+    setMounted(true);
+    return () => setMounted(false);
   }, []);
 
+  // Inicializar Firebase Auth solo en el cliente y cuando el componente está montado
   useEffect(() => {
     // No ejecutar el efecto en el servidor
     if (isServer()) return;
@@ -99,53 +73,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Iniciar listener de autenticación solo cuando el componente está montado
     if (!mounted) return;
     
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCargando(true);
-      if (user) {
-        const docRef = doc(db, 'usuarios', user.uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          // Usuario existente - actualizar último acceso
-          const userData = docSnap.data() as Usuario;
-          
-          // Actualizar campo de último acceso
-          await updateDoc(docRef, {
-            ultimoAcceso: serverTimestamp()
-          });
-          
-          setUsuarioActual(userData);
+    try {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        setCargando(true);
+        if (user) {
+          try {
+            const docRef = doc(db, 'usuarios', user.uid);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+              // Usuario existente - actualizar último acceso
+              const userData = docSnap.data() as Usuario;
+              
+              // Actualizar campo de último acceso
+              await updateDoc(docRef, {
+                ultimoAcceso: serverTimestamp()
+              });
+              
+              setUsuarioActual(userData);
+            } else {
+              // Nuevo usuario - crear perfil
+              const nuevoUsuario: Usuario = {
+                id: user.uid,
+                nombre: user.displayName || 'Usuario',
+                nombreUsuario: `@${user.displayName?.replace(/\s+/g, '').toLowerCase() || 'usuario'}${Math.floor(Math.random() * 1000)}`,
+                email: user.email || '',
+                fotoURL: user.photoURL || '/imagenes/usuario-default.png',
+                biografia: '',
+                fechaRegistro: serverTimestamp(),
+                ultimoAcceso: serverTimestamp(),
+                rol: 'usuario', // Rol por defecto
+                seguidores: [],
+                siguiendo: [],
+                favoritos: [],
+                publicacionesCount: 0
+              };
+              
+              await setDoc(docRef, nuevoUsuario);
+              setUsuarioActual(nuevoUsuario);
+            }
+          } catch (error) {
+            console.error("Error al procesar usuario:", error);
+            setUsuarioActual(null);
+          }
         } else {
-          // Nuevo usuario - crear perfil
-          const nuevoUsuario: Usuario = {
-            id: user.uid,
-            nombre: user.displayName || 'Usuario',
-            nombreUsuario: `@${user.displayName?.replace(/\s+/g, '').toLowerCase() || 'usuario'}${Math.floor(Math.random() * 1000)}`,
-            email: user.email || '',
-            fotoURL: user.photoURL || '/imagenes/usuario-default.png',
-            biografia: '',
-            fechaRegistro: serverTimestamp(),
-            ultimoAcceso: serverTimestamp(),
-            rol: 'usuario', // Rol por defecto
-            seguidores: [],
-            siguiendo: [],
-            favoritos: [],
-            publicacionesCount: 0
-          };
-          
-          await setDoc(docRef, nuevoUsuario);
-          setUsuarioActual(nuevoUsuario);
+          setUsuarioActual(null);
         }
-      } else {
-        setUsuarioActual(null);
-      }
+        setCargando(false);
+      });
+      
+      return () => unsubscribe();
+    } catch (error) {
+      console.error("Error en listener de autenticación:", error);
       setCargando(false);
-    });
+      return () => {};
+    }
+  }, [mounted]);
 
-    return () => unsubscribe();
-  }, [mounted]); // Agregamos mounted como dependencia
-
-  // Si estamos en el servidor durante SSR o aún no está montado, devolver valores por defecto
+  // Si estamos en el servidor o aún no está montado, devolver valores por defecto
   if (isServer() || !mounted) {
     return (
       <AuthContext.Provider value={valoresPorDefecto}>
@@ -154,7 +139,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
   }
 
+  // Implementaciones de funciones relacionadas con autenticación
   async function iniciarSesionConGoogle() {
+    if (isServer()) return;
+    
     setCargando(true);
     try {
       await signInWithPopup(auth, proveedorGoogle);
@@ -167,6 +155,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function iniciarSesionConEmail(email: string, password: string) {
+    if (isServer()) return;
+    
     setCargando(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -179,6 +169,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function iniciarSesionConNombreUsuario(nombreUsuario: string, password: string) {
+    if (isServer()) return;
+    
     setCargando(true);
     try {
       // Buscar usuario por nombre de usuario
@@ -199,6 +191,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function registrarConEmail(email: string, password: string, nombreUsuario?: string) {
+    if (isServer()) return;
+    
     setCargando(true);
     try {
       const credencial = await createUserWithEmailAndPassword(auth, email, password);
@@ -243,6 +237,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function cerrarSesion() {
+    if (isServer()) return;
+    
     setCargando(true);
     try {
       await signOut(auth);
