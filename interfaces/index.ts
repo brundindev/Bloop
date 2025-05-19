@@ -5,6 +5,7 @@
 // import { User } from 'path/to/interfaces';
 
 // Interfaces para nuestra Red Social en Español
+import { FieldValue } from 'firebase/firestore';
 
 // Tipo para roles de usuario
 export type RolUsuario = 'usuario' | 'moderador' | 'administrador';
@@ -17,8 +18,8 @@ export interface Usuario {
   email: string;
   fotoURL: string;
   biografia?: string;
-  fechaRegistro: Date | string | number;
-  ultimoAcceso?: Date | string | number;
+  fechaRegistro: Date | string | number | FieldValue;
+  ultimoAcceso?: Date | string | number | FieldValue;
   rol: RolUsuario;
   seguidores: string[];
   siguiendo: string[];
@@ -37,7 +38,7 @@ export interface Publicacion {
   autorNombre: string;
   autorNombreUsuario: string;
   autorFotoURL: string;
-  fechaCreacion: Date | string | number;
+  fechaCreacion: Date | string | number | FieldValue;
   likes: string[]; // Array de IDs de usuarios
   retweets: string[]; // Array de IDs de usuarios
   comentarios: number; // Contador de comentarios
@@ -53,7 +54,7 @@ export interface Comentario {
   autorNombre: string;
   autorNombreUsuario: string;
   autorFotoURL: string;
-  fechaCreacion: Date | string | number;
+  fechaCreacion: Date | string | number | FieldValue;
   publicacionId: string;
   likes: string[];
 }
@@ -67,6 +68,6 @@ export interface Notificacion {
   emisorFotoURL: string;
   receptorId: string;
   publicacionId?: string;
-  fechaCreacion: Date | string | number;
+  fechaCreacion: Date | string | number | FieldValue;
   leida: boolean;
 }

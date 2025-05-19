@@ -1,11 +1,277 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaGoogle, FaEnvelope, FaMoon, FaSun, FaArrowLeft, FaUser, FaUserPlus } from 'react-icons/fa';
+import { FaGoogle, FaArrowLeft, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
-import Button from '../components/ui/Button';
-import { useTema } from '../contexts/TemaContext';
+import React from 'react';
+
+// Componente que garantiza que todas las fuentes y estilos se carguen antes de mostrar el contenido
+const StylesLoaded = ({ children }: { children: React.ReactNode }) => {
+  const [loaded, setLoaded] = useState(false);
+  
+  // Useeffect para prevenir el parpadeo de estilos
+  React.useEffect(() => {
+    // Verificar si document está disponible (lado del cliente)
+    if (typeof document !== 'undefined') {
+      setLoaded(true);
+    }
+  }, []);
+  
+  // Solo muestra el contenido cuando estamos en el cliente
+  return loaded ? <>{children}</> : null;
+};
+
+// Estilos con styled-components
+const Container = styled.div`
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0a1c3b 0%, #132e5d 50%, #1e3b7d 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 0 20px;
+`;
+
+const BackgroundShape = styled.div`
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(72, 102, 180, 0.1);
+  z-index: 0;
+  
+  &.shape1 {
+    width: 700px;
+    height: 700px;
+    top: -200px;
+    left: -100px;
+  }
+  
+  &.shape2 {
+    width: 500px;
+    height: 500px;
+    bottom: -100px;
+    right: -100px;
+  }
+  
+  &.shape3 {
+    width: 300px;
+    height: 300px;
+    bottom: 100px;
+    left: 150px;
+    background: rgba(72, 102, 180, 0.07);
+  }
+`;
+
+const Header = styled.header`
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 10;
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const LogoIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+`;
+
+const LogoText = styled.span`
+  font-size: 24px;
+  font-weight: 600;
+  color: white;
+`;
+
+const Card = styled(motion.div)`
+  max-width: 450px;
+  width: 100%;
+  padding: 40px;
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  
+  @media (max-width: 600px) {
+    padding: 30px 20px;
+  }
+`;
+
+const CardHeader = styled.div`
+  text-align: left;
+  margin-bottom: 32px;
+`;
+
+const WelcomeCardHeader = styled(CardHeader)`
+  text-align: center;
+`;
+
+const Title = styled.h1`
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1a202c;
+`;
+
+const Subtitle = styled.p`
+  color: #718096;
+  font-size: 16px;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const InputGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const InputLabel = styled.label`
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+`;
+
+const Input = styled.input`
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 16px;
+  transition: all 0.2s;
+  
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+`;
+
+const Button = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 16px;
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const PrimaryButton = styled(Button)`
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  
+  &:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
+`;
+
+const OutlineButton = styled(Button)`
+  background-color: transparent;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(37, 99, 235, 0.05);
+  }
+`;
+
+const Divider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  span {
+    padding: 0 16px;
+    color: #718096;
+    font-size: 14px;
+  }
+`;
+
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #718096;
+  font-size: 14px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  padding: 0;
+  
+  &:hover {
+    color: #2563eb;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  background-color: #fef2f2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+`;
+
+const LinkRow = styled.div`
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #718096;
+  
+  span {
+    color: #2563eb;
+    cursor: pointer;
+    margin-left: 4px;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+const Footer = styled.footer`
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+`;
 
 const WelcomePage = () => {
   const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register' | 'email-login' | 'email-register'>('welcome');
@@ -15,7 +281,6 @@ const WelcomePage = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { iniciarSesionConGoogle, iniciarSesionConEmail, iniciarSesionConNombreUsuario, registrarConEmail } = useAuth();
-  const { tema, cambiarTema } = useTema();
 
   // Iniciar sesión con Google
   const handleGoogleLogin = async () => {
@@ -99,290 +364,175 @@ const WelcomePage = () => {
   };
 
   return (
-    <>
+    <StylesLoaded>
       <Head>
-        <title>Bienvenido a Bloop</title>
-        <meta name="description" content="Únete a Bloop, la red social moderna y minimalista" />
+        <title>Bloop - Bienvenido</title>
+        <meta name="description" content="Únete a Bloop, la red social moderna" />
       </Head>
 
-      <div className={`welcome-container ${tema === 'oscuro' ? 'tema-oscuro' : ''}`}>
-        <header className="welcome-header">
-          <div className="welcome-logo-container">
-            <span className="welcome-logo-icon">B</span>
-            <span className="welcome-logo-text">Bloop</span>
-          </div>
-          <button 
-            className="welcome-theme-button"
-            onClick={cambiarTema} 
-            aria-label={tema === 'claro' ? 'Activar modo oscuro' : 'Activar modo claro'}
-          >
-            {tema === 'claro' ? <FaMoon /> : <FaSun />}
-          </button>
-        </header>
-
-        <main className="welcome-main">
-          <motion.div
-            className="welcome-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {authMode === 'welcome' ? (
-              <>
-                <div className="welcome-card-header">
-                  <h1 className="welcome-card-title">Bienvenido a Bloop</h1>
-                  <p className="welcome-card-subtitle">
-                    La red social donde encontrarás conversaciones que importan
-                  </p>
-                </div>
-
-                <Button
-                  variant="primary"
-                  fullWidth
-                  leftIcon={<FaUser />}
-                  onClick={() => setAuthMode('login')}
-                  size="large"
+      <Container>
+        <BackgroundShape className="shape1" />
+        <BackgroundShape className="shape2" />
+        <BackgroundShape className="shape3" />
+        
+        <Header>
+          <Logo>
+            <LogoIcon>B</LogoIcon>
+            <LogoText>bloop</LogoText>
+          </Logo>
+        </Header>
+        
+        <Card
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {authMode === 'welcome' && (
+            <>
+              <WelcomeCardHeader>
+                <Title>Bienvenido a Bloop</Title>
+                <Subtitle>La red social donde encontrarás conversaciones que importan</Subtitle>
+              </WelcomeCardHeader>
+              
+              <PrimaryButton 
+                onClick={() => setAuthMode('login')}
+              >
+                <FaSignInAlt /> Iniciar sesión
+              </PrimaryButton>
+              
+              <OutlineButton 
+                onClick={() => setAuthMode('register')}
+              >
+                <FaUserPlus /> Registrarse
+              </OutlineButton>
+            </>
+          )}
+          
+          {authMode === 'login' && (
+            <>
+              <BackButton onClick={() => setAuthMode('welcome')}>
+                <FaArrowLeft /> Volver
+              </BackButton>
+            
+              <CardHeader>
+                <Title>Inicia sesión en tu cuenta</Title>
+                <Subtitle>¡Hagamos el círculo más grande!</Subtitle>
+              </CardHeader>
+              
+              {error && <ErrorMessage>{error}</ErrorMessage>}
+              
+              <Form onSubmit={handleEmailLogin}>
+                <InputGroup>
+                  <InputLabel>Email</InputLabel>
+                  <Input 
+                    type="text" 
+                    placeholder="nombre@ejemplo.com" 
+                    value={emailOrUsername} 
+                    onChange={(e) => setEmailOrUsername(e.target.value)} 
+                  />
+                </InputGroup>
+                
+                <InputGroup>
+                  <InputLabel>Contraseña</InputLabel>
+                  <Input 
+                    type="password" 
+                    placeholder="Tu contraseña" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                  />
+                </InputGroup>
+                
+                <PrimaryButton 
+                  type="submit" 
+                  disabled={loading}
                 >
                   Iniciar sesión
-                </Button>
-
-                <div className="welcome-divider">
-                  <span>o</span>
-                </div>
-
-                <Button
-                  variant="outline"
-                  fullWidth
-                  leftIcon={<FaUserPlus />}
-                  onClick={() => setAuthMode('register')}
-                  size="large"
+                </PrimaryButton>
+              </Form>
+              
+              <Divider><span>o</span></Divider>
+              
+              <OutlineButton 
+                onClick={handleGoogleLogin} 
+                disabled={loading}
+              >
+                <FaGoogle /> Continuar con Google
+              </OutlineButton>
+              
+              <LinkRow>
+                ¿No tienes una cuenta?
+                <span onClick={() => { setAuthMode('register'); setError(''); }}>
+                  Regístrate
+                </span>
+              </LinkRow>
+            </>
+          )}
+          
+          {authMode === 'register' && (
+            <>
+              <BackButton onClick={() => setAuthMode('welcome')}>
+                <FaArrowLeft /> Volver
+              </BackButton>
+              
+              <CardHeader>
+                <Title>Crea tu cuenta</Title>
+                <Subtitle>¡Únete a nuestro círculo hoy!</Subtitle>
+              </CardHeader>
+              
+              {error && <ErrorMessage>{error}</ErrorMessage>}
+              
+              <Form onSubmit={handleEmailRegister}>
+                <InputGroup>
+                  <InputLabel>Email</InputLabel>
+                  <Input 
+                    type="email" 
+                    placeholder="nombre@ejemplo.com" 
+                    value={emailOrUsername} 
+                    onChange={(e) => setEmailOrUsername(e.target.value)} 
+                  />
+                </InputGroup>
+                
+                <InputGroup>
+                  <InputLabel>Contraseña</InputLabel>
+                  <Input 
+                    type="password" 
+                    placeholder="Elige una contraseña (mín. 6 caracteres)" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                  />
+                </InputGroup>
+                
+                <PrimaryButton 
+                  type="submit" 
+                  disabled={loading}
                 >
                   Registrarse
-                </Button>
-              </>
-            ) : authMode === 'login' ? (
-              <>
-                <button 
-                  className="welcome-back-button"
-                  onClick={() => setAuthMode('welcome')}
-                >
-                  <FaArrowLeft /> Volver
-                </button>
-                
-                <div className="welcome-card-header">
-                  <h1 className="welcome-card-title">Iniciar sesión</h1>
-                  <p className="welcome-card-subtitle">
-                    Elige cómo quieres acceder a tu cuenta
-                  </p>
-                </div>
-
-                <Button
-                  variant="outline"
-                  fullWidth
-                  leftIcon={<FaEnvelope />}
-                  onClick={() => setAuthMode('email-login')}
-                  size="large"
-                >
-                  Correo o nombre de usuario
-                </Button>
-
-                <div className="welcome-divider">
-                  <span>o</span>
-                </div>
-
-                <Button
-                  variant="primary"
-                  fullWidth
-                  leftIcon={<FaGoogle />}
-                  onClick={handleGoogleLogin}
-                  isLoading={loading}
-                  size="large"
-                >
-                  Continuar con Google
-                </Button>
-              </>
-            ) : authMode === 'register' ? (
-              <>
-                <button 
-                  className="welcome-back-button"
-                  onClick={() => setAuthMode('welcome')}
-                >
-                  <FaArrowLeft /> Volver
-                </button>
-                
-                <div className="welcome-card-header">
-                  <h1 className="welcome-card-title">Crear cuenta</h1>
-                  <p className="welcome-card-subtitle">
-                    Elige cómo quieres registrarte
-                  </p>
-                </div>
-
-                <Button
-                  variant="outline"
-                  fullWidth
-                  leftIcon={<FaEnvelope />}
-                  onClick={() => setAuthMode('email-register')}
-                  size="large"
-                >
-                  Registrarse con correo
-                </Button>
-
-                <div className="welcome-divider">
-                  <span>o</span>
-                </div>
-
-                <Button
-                  variant="primary"
-                  fullWidth
-                  leftIcon={<FaGoogle />}
-                  onClick={handleGoogleLogin}
-                  isLoading={loading}
-                  size="large"
-                >
-                  Registrarse con Google
-                </Button>
-              </>
-            ) : authMode === 'email-login' ? (
-              <>
-                <button 
-                  className="welcome-back-button"
-                  onClick={() => setAuthMode('login')}
-                >
-                  <FaArrowLeft /> Volver
-                </button>
-                
-                <div className="welcome-card-header">
-                  <h1 className="welcome-card-title">Iniciar sesión</h1>
-                  <p className="welcome-card-subtitle">
-                    Accede a tu cuenta de Bloop
-                  </p>
-                </div>
-
-                {error && <div className="welcome-error-message">{error}</div>}
-
-                <form onSubmit={handleEmailLogin}>
-                  <div className="welcome-forms">
-                    <div className="welcome-input-group">
-                      <label htmlFor="emailOrUsername" className="welcome-label">Correo o nombre de usuario</label>
-                      <input
-                        id="emailOrUsername"
-                        type="text"
-                        value={emailOrUsername}
-                        onChange={(e) => setEmailOrUsername(e.target.value)}
-                        placeholder="tu@ejemplo.com o @usuario"
-                        required
-                        className="welcome-input"
-                      />
-                    </div>
-
-                    <div className="welcome-input-group">
-                      <label htmlFor="password" className="welcome-label">Contraseña</label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Tu contraseña"
-                        required
-                        className="welcome-input"
-                      />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      fullWidth
-                      isLoading={loading}
-                      size="large"
-                    >
-                      Iniciar sesión
-                    </Button>
-                  </div>
-                </form>
-
-                <div className="welcome-form-toggle">
-                  ¿No tienes una cuenta?{' '}
-                  <span className="welcome-link-text" onClick={() => setAuthMode('email-register')}>
-                    Regístrate
-                  </span>
-                </div>
-              </>
-            ) : (
-              <>
-                <button 
-                  className="welcome-back-button"
-                  onClick={() => setAuthMode('register')}
-                >
-                  <FaArrowLeft /> Volver
-                </button>
-                
-                <div className="welcome-card-header">
-                  <h1 className="welcome-card-title">Crear cuenta</h1>
-                  <p className="welcome-card-subtitle">
-                    Únete a Bloop y conéctate con personas de todo el mundo
-                  </p>
-                </div>
-
-                {error && <div className="welcome-error-message">{error}</div>}
-
-                <form onSubmit={handleEmailRegister}>
-                  <div className="welcome-forms">
-                    <div className="welcome-input-group">
-                      <label htmlFor="reg-email" className="welcome-label">Correo electrónico</label>
-                      <input
-                        id="reg-email"
-                        type="email"
-                        value={emailOrUsername}
-                        onChange={(e) => setEmailOrUsername(e.target.value)}
-                        placeholder="tu@ejemplo.com"
-                        required
-                        className="welcome-input"
-                      />
-                    </div>
-
-                    <div className="welcome-input-group">
-                      <label htmlFor="reg-password" className="welcome-label">Contraseña</label>
-                      <input
-                        id="reg-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Al menos 6 caracteres"
-                        required
-                        minLength={6}
-                        className="welcome-input"
-                      />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      fullWidth
-                      isLoading={loading}
-                      size="large"
-                    >
-                      Crear cuenta
-                    </Button>
-                  </div>
-                </form>
-
-                <div className="welcome-form-toggle">
-                  ¿Ya tienes una cuenta?{' '}
-                  <span className="welcome-link-text" onClick={() => setAuthMode('email-login')}>
-                    Inicia sesión
-                  </span>
-                </div>
-              </>
-            )}
-          </motion.div>
-        </main>
-
-        <footer className="welcome-footer">
-          <p>© {new Date().getFullYear()} Bloop. Todos los derechos reservados.</p>
-        </footer>
-      </div>
-    </>
+                </PrimaryButton>
+              </Form>
+              
+              <Divider><span>o</span></Divider>
+              
+              <OutlineButton 
+                onClick={handleGoogleLogin} 
+                disabled={loading}
+              >
+                <FaGoogle /> Registrarse con Google
+              </OutlineButton>
+            </>
+          )}
+        </Card>
+        
+        <Footer>© 2023 Bloop. Todos los derechos reservados.</Footer>
+      </Container>
+    </StylesLoaded>
   );
 };
+
+// Esta función se ejecuta en el servidor
+export async function getServerSideProps() {
+  return {
+    props: {}, // props vacíos, pero fuerza que esta página siempre use SSR
+  };
+}
 
 export default WelcomePage; 
