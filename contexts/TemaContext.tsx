@@ -1,5 +1,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider, createGlobalStyle, DefaultTheme } from 'styled-components';
+import { useAuth } from './AuthContext';
+import { actualizarPreferencias } from '../utils/services/cookies';
 
 // Temas definidos igual que en _app.tsx
 const temaClaro: DefaultTheme = {
@@ -12,10 +14,24 @@ const temaClaro: DefaultTheme = {
   hover: "#f0f2f5",
   shadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
   
+  // Propiedades para la página de perfil
+  fondo: "#ffffff",
+  borde: "#e5e7eb",
+  texto: "#333333",
+  textoSecundario: "#536471",
+  primario: "#2563eb",
+  error: "#ef4444",
+  
   // Propiedades requeridas por styled-components
   colors: {
     primary: "#2563eb",
-    secondary: "#536471"
+    secondary: "#536471",
+    fondo: "#ffffff",
+    borde: "#e5e7eb",
+    texto: "#333333",
+    textoSecundario: "#536471",
+    primario: "#2563eb",
+    error: "#ef4444"
   },
   breakpoints: {
     sm: "640px",
@@ -39,10 +55,24 @@ const temaOscuro: DefaultTheme = {
   hover: "#202e3a",
   shadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
   
+  // Propiedades para la página de perfil
+  fondo: "#15202b",
+  borde: "#38444d",
+  texto: "#ffffff",
+  textoSecundario: "#8899a6",
+  primario: "#3b82f6",
+  error: "#f87171",
+  
   // Propiedades requeridas por styled-components
   colors: {
     primary: "#3b82f6",
-    secondary: "#8899a6"
+    secondary: "#8899a6",
+    fondo: "#15202b",
+    borde: "#38444d",
+    texto: "#ffffff",
+    textoSecundario: "#8899a6",
+    primario: "#3b82f6",
+    error: "#f87171"
   },
   breakpoints: {
     sm: "640px",
@@ -102,6 +132,7 @@ interface TemaProviderProps {
 export function TemaProvider({ children }: TemaProviderProps) {
   const [tema, setTema] = useState<'claro' | 'oscuro'>('claro');
   const [styledTheme, setStyledTheme] = useState<DefaultTheme>(temaClaro);
+  const { usuarioActual } = useAuth();
 
   // Al iniciar, verificamos si hay una preferencia guardada
   useEffect(() => {
@@ -129,12 +160,23 @@ export function TemaProvider({ children }: TemaProviderProps) {
   }, []);
 
   // Función para cambiar entre temas
-  const cambiarTema = () => {
+  const cambiarTema = async () => {
     const nuevoTema = tema === 'claro' ? 'oscuro' : 'claro';
     setTema(nuevoTema);
     setStyledTheme(nuevoTema === 'claro' ? temaClaro : temaOscuro);
     document.documentElement.classList.toggle('dark', nuevoTema === 'oscuro');
     localStorage.setItem('tema', nuevoTema);
+    
+    // Si el usuario está autenticado, guardar preferencia en Firebase
+    if (usuarioActual) {
+      try {
+        await actualizarPreferencias(usuarioActual.id, {
+          tema: nuevoTema
+        });
+      } catch (error) {
+        console.error('Error al guardar preferencia de tema:', error);
+      }
+    }
   };
 
   const value = { tema, cambiarTema, styledTheme };

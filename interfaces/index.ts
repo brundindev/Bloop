@@ -18,6 +18,7 @@ export interface Usuario {
   nombreNormalizado?: string; // Versión normalizada del nombre para búsquedas
   email: string;
   fotoURL: string;
+  bannerURL?: string; // URL de la imagen de banner del perfil
   biografia?: string;
   fechaRegistro: Date | string | number | FieldValue;
   ultimoAcceso?: Date | string | number | FieldValue;

@@ -15,6 +15,12 @@ declare module 'styled-components' {
       gray200: string;
       gray700: string;
       gray800: string;
+      fondo: string;
+      borde: string;
+      texto: string;
+      textoSecundario: string;
+      primario: string;
+      error: string;
     };
     breakpoints: {
       sm: string;

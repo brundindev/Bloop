@@ -13,6 +13,14 @@
   --color-gray700: #657786;
   --color-gray800: #2d3748;
 
+  /* Variables para la página de perfil */
+  --color-fondo: var(--color-background);
+  --color-borde: var(--color-gray200);
+  --color-texto: var(--color-text);
+  --color-texto-secundario: var(--color-gray700);
+  --color-primario: var(--color-primary);
+  --color-error: #ef4444;
+
   /* Tamaños de fuente */
   --font-small: 0.875rem;
   --font-medium: 1rem;

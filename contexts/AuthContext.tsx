@@ -18,7 +18,7 @@ interface AuthContextProps {
   iniciarSesionConGoogle: () => Promise<void>;
   iniciarSesionConEmail: (email: string, password: string) => Promise<void>;
   iniciarSesionConNombreUsuario: (nombreUsuario: string, password: string) => Promise<void>;
-  registrarConEmail: (email: string, password: string) => Promise<void>;
+  registrarConEmail: (email: string, password: string, nombreUsuario?: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
 }
 
@@ -131,17 +131,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  async function registrarConEmail(email: string, password: string) {
+  async function registrarConEmail(email: string, password: string, nombreUsuario?: string) {
     setCargando(true);
     try {
       const credencial = await createUserWithEmailAndPassword(auth, email, password);
       const user = credencial.user;
       
+      // Normalizar el nombre de usuario
+      let nombreUsuarioFinal = nombreUsuario || '';
+      
+      // Si no se proporcionó un nombre de usuario, generar uno automáticamente
+      if (!nombreUsuarioFinal) {
+        nombreUsuarioFinal = `@usuario${Math.floor(Math.random() * 10000)}`;
+      } else if (!nombreUsuarioFinal.startsWith('@')) {
+        nombreUsuarioFinal = `@${nombreUsuarioFinal}`;
+      }
+      
       // Crear perfil de usuario en Firestore
       const nuevoUsuario: Usuario = {
         id: user.uid,
         nombre: 'Usuario', // Nombre por defecto, se puede actualizar luego
-        nombreUsuario: `@usuario${Math.floor(Math.random() * 10000)}`,
+        nombreUsuario: nombreUsuarioFinal,
+        nombreNormalizado: nombreUsuarioFinal.toLowerCase().substring(1), // Quitar @ para búsquedas
         email: user.email || '',
         fotoURL: '/imagenes/usuario-default.png',
         biografia: '',

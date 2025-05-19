@@ -292,4 +292,30 @@ export async function dejarDeSeguirUsuario(
     console.error('Error al dejar de seguir usuario:', error);
     throw error;
   }
+}
+
+/**
+ * Verifica si un nombre de usuario está disponible (no existe en la base de datos)
+ */
+export async function verificarDisponibilidadNombreUsuario(nombreUsuario: string): Promise<boolean> {
+  try {
+    // Asegurarse que el formato sea @usuario
+    if (!nombreUsuario.startsWith('@')) {
+      nombreUsuario = `@${nombreUsuario}`;
+    }
+    
+    const q = query(
+      collection(db, USUARIOS_COLLECTION), 
+      where('nombreUsuario', '==', nombreUsuario),
+      limit(1)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    // Si la consulta está vacía, el nombre de usuario está disponible
+    return querySnapshot.empty;
+  } catch (error) {
+    console.error('Error al verificar disponibilidad de nombre de usuario:', error);
+    throw error;
+  }
 } 
