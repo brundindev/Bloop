@@ -1,39 +1,17 @@
+/* Archivo de compatibilidad */
 
+/* 
 @import "tw-animate-css";
+@import "./tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+*/
 
-@layer base {
-  html {
-    @apply scroll-smooth;
-  }
-  body {
-    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300;
-  }
-}
-
-@layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-primary-600 text-white rounded-full font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors;
-  }
-
-  .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors;
-  }
-
-  .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all;
-  }
-
-  .input {
-    @apply w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-transparent transition-all;
-  }
-}
-
+/* Estilos básicos del proyecto */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -86,6 +64,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -114,9 +93,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
